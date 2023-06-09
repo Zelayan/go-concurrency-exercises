@@ -12,6 +12,7 @@ package main
 import (
 	"fmt"
 	"sync"
+	"time"
 )
 
 // Crawl uses `fetcher` from the `mockfetcher.go` file to imitate a
@@ -35,6 +36,7 @@ func Crawl(url string, depth int, wg *sync.WaitGroup) {
 	for _, u := range urls {
 		// Do not remove the `go` keyword, as Crawl() must be
 		// called concurrently
+		time.Sleep(time.Second)
 		go Crawl(u, depth-1, wg)
 	}
 	return
