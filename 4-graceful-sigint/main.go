@@ -13,10 +13,38 @@
 
 package main
 
+import (
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+)
+
 func main() {
 	// Create a process
 	proc := MockProcess{}
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGTERM, os.Kill, syscall.SIGINT)
 
+	doneChan := make(chan struct{})
+	go func() {
+		i := 0
+		for sig := range signals {
+			log.Printf("receive %s\n", sig)
+			if i == 0 {
+				go runStop(&proc)
+				i++
+			} else {
+				doneChan <- struct{}{}
+			}
+
+		}
+	}()
 	// Run the process (blocking)
-	proc.Run()
+	go proc.Run()
+	<-doneChan
+}
+
+func runStop(mock *MockProcess) {
+	mock.Stop()
 }
